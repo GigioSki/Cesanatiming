@@ -10,7 +10,7 @@
   <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="timing.html" class="nav-link active">Tempi Live</a>
+      <a href="timing.html" class="nav-link active">Tempi</a>
       <a href="setup.html" class="nav-link">Setup</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -57,6 +57,9 @@
           <td>${r.elapsed}</td>
           <td class="start-time-col">${r.start_time}</td>
         `;
+        if(r.color){
+          tr.style.background = r.color + '33';
+        }
         tbody.appendChild(tr);
       });
     }
