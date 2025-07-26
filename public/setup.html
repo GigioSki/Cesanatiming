@@ -10,7 +10,7 @@
   <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="timing.html" class="nav-link">Tempi Live</a>
+      <a href="timing.html" class="nav-link">Tempi</a>
       <a href="setup.html" class="nav-link active">Setup</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -33,9 +33,21 @@
     <!-- Aggiungi Associazioni -->
     <h1>Aggiungi Associazioni</h1>
     <form id="form">
-      <select id="uuid" required></select>
-      <input type="text" id="name" placeholder="Nome utente" required>
-      <br>
+      <div class="form-grid">
+        <select id="uuid"></select>
+        <div id="color-picker" class="color-picker">
+          <div class="color-swatch" data-color="#ff0000" style="background:#ff0000"></div>
+          <div class="color-swatch" data-color="#ff8800" style="background:#ff8800"></div>
+          <div class="color-swatch" data-color="#ffff00" style="background:#ffff00"></div>
+          <div class="color-swatch" data-color="#80ff80" style="background:#80ff80"></div>
+          <div class="color-swatch" data-color="#008000" style="background:#008000"></div>
+          <div class="color-swatch" data-color="#00ffff" style="background:#00ffff"></div>
+          <div class="color-swatch" data-color="#0000ff" style="background:#0000ff"></div>
+          <div class="color-swatch" data-color="#800080" style="background:#800080"></div>
+        </div>
+        <input type="text" id="uuid-manual" placeholder="UID manuale">
+        <input type="text" id="name" placeholder="Nome utente" required>
+      </div>
       <button type="submit">Salva</button>
     </form>
 
@@ -92,18 +104,31 @@
     // Tags CRUD
     const form = document.getElementById('form'),
           uuidSel = document.getElementById('uuid'),
+          uuidManual = document.getElementById('uuid-manual'),
+          colorPicker = document.getElementById('color-picker'),
           tagsTbody = document.getElementById('tags-tbody');
+
+    let selectedColor = '';
+    colorPicker.querySelectorAll('.color-swatch').forEach(el => {
+      el.addEventListener('click', () => {
+        colorPicker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedColor = el.dataset.color;
+      });
+    });
     form.addEventListener('submit', async e=>{
       e.preventDefault();
-      const uuid = uuidSel.value,
+      const uuid = uuidSel.value || uuidManual.value.trim(),
             name = document.getElementById('name').value.trim();
       if(!uuid||!name) return;
       await fetch('/api/tags',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({uuid,name})
+        body:JSON.stringify({uuid,name,color:selectedColor})
       });
       form.reset();
+      selectedColor = '';
+      colorPicker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
       loadTags();
       loadUnassigned();
     });
@@ -123,6 +148,9 @@
           <td>${r.name}</td>
           <td><button onclick="deleteTag('${r.uuid}')">Elimina</button></td>
         `;
+        if(r.color){
+          tr.style.background = r.color + '33';
+        }
         tagsTbody.appendChild(tr);
       });
     }
