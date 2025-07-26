@@ -17,7 +17,7 @@
   </header>
 
   <main class="container">
-    <h1>Tempi</h1>
+    <h1>Tempi Live</h1>
     <table>
       <thead>
         <tr>
@@ -44,6 +44,15 @@
       toggle.textContent = isDark?'☀️':'🌙';
     });
 
+    function hexToRGBA(hex, alpha) {
+      const h = hex.replace('#', '');
+      const bigint = parseInt(h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
     // Carica cronometri
     async function load() {
       const res  = await fetch('/api/timings');
@@ -58,7 +67,7 @@
           <td class="start-time-col">${r.start_time}</td>
         `;
         if(r.color){
-          tr.style.backgroundColor = r.color;
+          tr.style.backgroundColor = hexToRGBA(r.color, 0.2);
         }
         tbody.appendChild(tr);
       });

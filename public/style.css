@@ -32,7 +32,7 @@ body {
 }
 
 .container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -142,8 +142,8 @@ form {
 }
 
 input {
-  width: calc(100% - 100px);
-  max-width: 200px;
+  width: 100%;
+  max-width: 300px;
   padding: 6px 10px;
   margin: 0.5rem;
   border: 1px solid var(--table-border);
@@ -151,8 +151,8 @@ input {
   color: var(--text-color);
 }
 select {
-  width: calc(100% - 100px);
-  max-width: 200px;
+  width: 100%;
+  max-width: 300px;
   padding: 6px 10px;
   margin: 0.5rem;
   border: 1px solid var(--table-border);
@@ -172,6 +172,11 @@ button {
   margin: 0.5rem;
 }
 
+table button {
+  width: auto;
+  margin: 0;
+}
+
 button:hover { background: var(--nav-hover); }
 
 /* Responsive */
@@ -180,6 +185,13 @@ button:hover { background: var(--nav-hover); }
   input, select, button {
     width: 100%;
     margin-bottom: 8px;
+  }
+  table button {
+    width: auto;
+    margin: 0;
+  }
+  .color-picker {
+    grid-template-columns: repeat(4, 24px);
   }
 }
 
@@ -198,8 +210,8 @@ button:hover { background: var(--nav-hover); }
 
 /* Color picker */
 .color-picker {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(8, 24px);
   justify-content: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
