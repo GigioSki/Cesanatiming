@@ -76,6 +76,14 @@ body {
   font-size: 1.2rem;
   cursor: pointer;
   color: var(--nav-text);
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus {
+  background: none;
+  outline: none;
 }
 
 /* Status Cronometro */
@@ -123,6 +131,14 @@ th { background: var(--table-header-bg); }
 form {
   margin-bottom: 1rem;
   text-align: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  justify-items: center;
 }
 
 input {
@@ -178,4 +194,25 @@ button:hover { background: var(--nav-hover); }
 .setup-container .db-section h3 {
   font-size: 1.2rem;
   margin: 1rem 0 0.5rem;
+}
+
+/* Color picker */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.color-option.selected {
+  border-color: #ffffff;
 }

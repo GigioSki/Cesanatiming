@@ -10,7 +10,7 @@
   <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="timing.html" class="nav-link">Tempi Live</a>
+      <a href="timing.html" class="nav-link">Tempi</a>
       <a href="setup.html" class="nav-link active">Setup</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -32,10 +32,21 @@
 
     <!-- Aggiungi Associazioni -->
     <h1>Aggiungi Associazioni</h1>
-    <form id="form">
-      <select id="uuid" required></select>
-      <input type="text" id="name" placeholder="Nome utente" required>
-      <br>
+    <form id="form" class="assoc-form">
+      <div class="form-grid">
+        <div>
+          <select id="uuid"></select>
+        </div>
+        <div>
+          <div id="color-picker" class="color-picker"></div>
+        </div>
+        <div>
+          <input type="text" id="uuid-manual" placeholder="UID manuale">
+        </div>
+        <div>
+          <input type="text" id="name" placeholder="Nome utente" required>
+        </div>
+      </div>
       <button type="submit">Salva</button>
     </form>
 
@@ -92,18 +103,38 @@
     // Tags CRUD
     const form = document.getElementById('form'),
           uuidSel = document.getElementById('uuid'),
+          uuidManual = document.getElementById('uuid-manual'),
+          colorPicker = document.getElementById('color-picker'),
           tagsTbody = document.getElementById('tags-tbody');
+    const colors = [
+      '#ff0000', '#ff8000', '#ffff00', '#80ff80',
+      '#008000', '#00c8ff', '#0000ff', '#8000ff'
+    ];
+    let selectedColor = null;
+    colors.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'color-option';
+      d.style.backgroundColor = c;
+      d.addEventListener('click', () => {
+        selectedColor = c;
+        document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+        d.classList.add('selected');
+      });
+      colorPicker.appendChild(d);
+    });
     form.addEventListener('submit', async e=>{
       e.preventDefault();
-      const uuid = uuidSel.value,
+      const uuid = (uuidManual.value.trim()) || uuidSel.value,
             name = document.getElementById('name').value.trim();
-      if(!uuid||!name) return;
+      if(!uuid || !name) return;
       await fetch('/api/tags',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({uuid,name})
+        body:JSON.stringify({uuid,name,color:selectedColor})
       });
       form.reset();
+      selectedColor = null;
+      document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
       loadTags();
       loadUnassigned();
     });
@@ -123,6 +154,9 @@
           <td>${r.name}</td>
           <td><button onclick="deleteTag('${r.uuid}')">Elimina</button></td>
         `;
+        if(r.color){
+          tr.style.backgroundColor = r.color;
+        }
         tagsTbody.appendChild(tr);
       });
     }
