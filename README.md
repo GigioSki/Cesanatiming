@@ -16,6 +16,19 @@ Applicazione Node.js per gestire un semplice sistema di cronometraggio tramite M
    ```
 5. Visita `http://localhost:3000/` (o la porta configurata) per la schermata dei tempi. La pagina di setup si trova a `/setup.html` e richiede autenticazione.
 
+## Avvio con Docker Compose
+
+Per eseguire l'applicazione in container è presente un `docker-compose.yml`.
+Da terminale avvia:
+
+```bash
+docker-compose up --build
+```
+
+La porta `3000` sarà esposta e le cartelle `config` e `data` verranno
+montate come volumi per permettere la personalizzazione delle impostazioni e
+la persistenza dei database.
+
 ## Struttura cartelle
 
 - **html/** contiene i file HTML (`timing.html` e `setup.html`).
