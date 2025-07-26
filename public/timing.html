@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tempi Live - Cesana Timing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-left">Cesana Timing</div>
+    <div class="navbar-right">
+      <a href="timing.html" class="nav-link active">Tempi Live</a>
+      <a href="setup.html" class="nav-link">Setup</a>
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Tempi Live</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome/Tag</th>
+          <th>Tempo</th>
+          <th class="start-time-col">Ora partenza</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="3">Caricamento…</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    // Theme toggle
+    const toggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.toggle('dark-mode', currentTheme==='dark');
+    toggle.textContent = currentTheme==='dark'?'☀️':'🌙';
+    toggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', isDark?'dark':'light');
+      toggle.textContent = isDark?'☀️':'🌙';
+    });
+
+    // Carica cronometri
+    async function load() {
+      const res  = await fetch('/api/timings');
+      const data = await res.json();
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      data.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.name}</td>
+          <td>${r.elapsed}</td>
+          <td class="start-time-col">${r.start_time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    load();
+    setInterval(load, 5000);
+  </script>
+</body>
+</html>

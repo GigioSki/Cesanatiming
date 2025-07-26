@@ -1,0 +1,26 @@
+{
+  "name": "cronohost",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-basic-auth": "^1.2.1",
+    "mqtt": "^5.13.0",
+    "sqlite3": "^5.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GigioSki/cronohost.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GigioSki/cronohost/issues"
+  },
+  "homepage": "https://github.com/GigioSki/cronohost#readme",
+  "description": ""
+}

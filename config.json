@@ -1,0 +1,25 @@
+{
+    "web": {
+      "host": "0.0.0.0",
+      "port": 3000,
+      "username": "admin",
+      "password": "secret"
+    },
+    "mqtt": {
+      "brokerUrl": "mqtt://95.229.160.91:1883",
+      "options": {
+        "username": "pingu",
+        "password": "Pingu334"
+      },
+      "topicStatusStartGate": "crono/status/start",
+      "topicStatusStopGate":  "crono/status/stop",
+      "topicTag":   "crono/uuid/start",
+      "topicStart": "crono/timing/start",
+      "topicEnd": "crono/timing/stop"
+    },
+    "database": {
+      "timingPath":       "./data/timing.db",
+      "associationsPath": "./data/associations.db"
+    }
+  }
+  

@@ -1,0 +1,181 @@
+:root {
+  --bg-color: #fafafa;
+  --text-color: #333333;
+  --nav-bg: #ffffff;
+  --nav-text: #333333;
+  --nav-hover: #1976d2;
+  --button-bg: #1976d2;
+  --button-text: #ffffff;
+  --table-header-bg: #e0e0e0;
+  --table-body-bg: #ffffff;
+  --table-border: #cccccc;
+}
+
+body.dark-mode {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --nav-bg: #1f1f1f;
+  --nav-text: #e0e0e0;
+  --nav-hover: #90caf9;
+  --table-header-bg: #2c2c2c;
+  --table-body-bg: #1e1e1e;
+  --table-border: #444444;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--nav-bg);
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.navbar-left {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--nav-text);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--nav-text);
+  text-decoration: none;
+  font-weight: 500;
+  padding-bottom: 2px;
+}
+
+.nav-link:hover { color: var(--nav-hover); }
+.nav-link.active { text-decoration: underline; }
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--nav-text);
+}
+
+/* Status Cronometro */
+.status-section {
+  margin-bottom: 1.5rem;
+}
+
+.status-section h1 {
+  margin-bottom: 0.5rem;
+}
+.status-section .status-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.status-online { background: #00b300; }
+.status-offline { background: #e60000; }
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+  background: var(--table-body-bg);
+}
+
+th, td {
+  border: 1px solid var(--table-border);
+  padding: 8px;
+  text-align: center;
+}
+
+th { background: var(--table-header-bg); }
+
+/* Forms */
+form {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+input {
+  width: calc(100% - 100px);
+  max-width: 200px;
+  padding: 6px 10px;
+  margin: 0.5rem;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+select {
+  width: calc(100% - 100px);
+  max-width: 200px;
+  padding: 6px 10px;
+  margin: 0.5rem;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 0.25rem;
+}
+
+/* Buttons */
+button {
+  padding: 6px 10px;
+  cursor: pointer;
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+}
+
+button:hover { background: var(--nav-hover); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .start-time-col { display: none; }
+  input, select, button {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+/* Setup page centering */
+.setup-container { text-align: center; }
+.setup-container .status-section,
+.setup-container form,
+.setup-container table { margin: 0 auto; }
+.setup-container h1 { font-size: 2rem; margin: 1rem 0; }
+
+/* Sottotitoli Gestione DB */
+.setup-container .db-section h3 {
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem;
+}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup - Cesana Timing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-left">Cesana Timing</div>
+    <div class="navbar-right">
+      <a href="timing.html" class="nav-link">Tempi Live</a>
+      <a href="setup.html" class="nav-link active">Setup</a>
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="container setup-container">
+    <!-- Status Cronometro -->
+    <section class="status-section">
+      <h1>Status Cronometro</h1>
+      <div class="status-item">
+        <div id="start-dot" class="status-dot status-offline"></div>
+        <span>Start Gate: <span id="start-text">Offline</span></span>
+      </div>
+      <div class="status-item">
+        <div id="stop-dot" class="status-dot status-offline"></div>
+        <span>Stop Gate: <span id="stop-text">Offline</span></span>
+      </div>
+    </section>
+
+    <!-- Aggiungi Associazioni -->
+    <h1>Aggiungi Associazioni</h1>
+    <form id="form">
+      <select id="uuid" required></select>
+      <input type="text" id="name" placeholder="Nome utente" required>
+      <br>
+      <button type="submit">Salva</button>
+    </form>
+
+    <h2>Associazioni esistenti</h2>
+    <table>
+      <thead>
+        <tr><th>UUID</th><th>Nome</th><th>Elimina</th></tr>
+      </thead>
+      <tbody id="tags-tbody">
+        <tr><td colspan="3">Caricamento…</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Gestione Database -->
+    <section class="status-section">
+      <h1>Gestione Database</h1>
+
+      <button id="delete-timings">Azzera Tempi</button>
+      <button id="delete-assoc">Azzera Associazioni</button>
+    </section>
+  </main>
+
+  <script>
+    // Theme toggle
+    const toggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.toggle('dark-mode', currentTheme==='dark');
+    toggle.textContent = currentTheme==='dark'?'☀️':'🌙';
+    toggle.addEventListener('click', ()=>{
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', isDark?'dark':'light');
+      toggle.textContent = isDark?'☀️':'🌙';
+    });
+
+    // Status gate
+    async function loadStatus(){
+      try {
+        const res = await fetch('/api/status');
+        const { startGate, stopGate } = await res.json();
+        document.getElementById('start-dot').className =
+          `status-dot ${startGate?'status-online':'status-offline'}`;
+        document.getElementById('start-text').textContent =
+          startGate?'Online':'Offline';
+        document.getElementById('stop-dot').className =
+          `status-dot ${stopGate?'status-online':'status-offline'}`;
+        document.getElementById('stop-text').textContent =
+          stopGate?'Online':'Offline';
+      } catch(e){
+        console.error('Errore status:', e);
+      }
+    }
+    loadStatus(); setInterval(loadStatus, 5000);
+
+    // Tags CRUD
+    const form = document.getElementById('form'),
+          uuidSel = document.getElementById('uuid'),
+          tagsTbody = document.getElementById('tags-tbody');
+    form.addEventListener('submit', async e=>{
+      e.preventDefault();
+      const uuid = uuidSel.value,
+            name = document.getElementById('name').value.trim();
+      if(!uuid||!name) return;
+      await fetch('/api/tags',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({uuid,name})
+      });
+      form.reset();
+      loadTags();
+      loadUnassigned();
+    });
+    async function deleteTag(uuid){
+      await fetch(`/api/tags/${encodeURIComponent(uuid)}`,{method:'DELETE'});
+      loadTags();
+      loadUnassigned();
+    }
+    async function loadTags(){
+      const res = await fetch('/api/tags'),
+            data = await res.json();
+      tagsTbody.innerHTML = '';
+      data.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.uuid}</td>
+          <td>${r.name}</td>
+          <td><button onclick="deleteTag('${r.uuid}')">Elimina</button></td>
+        `;
+        tagsTbody.appendChild(tr);
+      });
+    }
+    loadTags();
+
+    async function loadUnassigned(){
+      const res = await fetch('/api/unassigned'),
+            data = await res.json();
+      uuidSel.innerHTML = '';
+      if(!data.length){
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Nessun UUID disponibile';
+        uuidSel.appendChild(opt);
+        uuidSel.disabled = true;
+      }else{
+        uuidSel.disabled = false;
+        const ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = 'Seleziona UUID';
+        ph.disabled = true; ph.selected = true;
+        uuidSel.appendChild(ph);
+        data.forEach(u=>{
+          const opt=document.createElement('option');
+          opt.value=u; opt.textContent=u;
+          uuidSel.appendChild(opt);
+        });
+      }
+    }
+    loadUnassigned();
+
+    // DB Management - delete buttons only
+    document.getElementById('delete-timings').onclick = async () => {
+      if (confirm('Eliminare tutti i tempi?')) {
+        await fetch('/api/db/timings', { method: 'DELETE' });
+        alert('Tempi azzerati');
+      }
+    };
+    document.getElementById('delete-assoc').onclick = async () => {
+      if (confirm('Eliminare tutte le associazioni?')) {
+        await fetch('/api/db/associations', { method: 'DELETE' });
+        alert('Associazioni azzerate');
+      }
+    };
+  </script>
+</body>
+</html>
