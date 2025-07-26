@@ -81,6 +81,15 @@
       toggle.textContent = isDark?'☀️':'🌙';
     });
 
+    function hexToRGBA(hex, alpha) {
+      const h = hex.replace('#', '');
+      const bigint = parseInt(h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
     // Status gate
     async function loadStatus(){
       try {
@@ -155,7 +164,7 @@
           <td><button onclick="deleteTag('${r.uuid}')">Elimina</button></td>
         `;
         if(r.color){
-          tr.style.backgroundColor = r.color;
+          tr.style.backgroundColor = hexToRGBA(r.color, 0.2);
         }
         tagsTbody.appendChild(tr);
       });
