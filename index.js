@@ -6,23 +6,23 @@ const basicAuth = require('express-basic-auth');
 const sqlite3   = require('sqlite3').verbose();
 
 // --- Caricamento e validazione config.json ---
-const CONFIG_FILE = path.join(__dirname, 'config.json');
+const CONFIG_FILE = path.join(__dirname, 'config', 'config.json');
 if (!fs.existsSync(CONFIG_FILE)) {
-  console.error('[FATAL] config.json non trovato in', __dirname);
+  console.error('[FATAL] config/config.json non trovato in', __dirname);
   process.exit(1);
 }
 let config;
 try {
   config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
 } catch (err) {
-  console.error('[FATAL] JSON malformato in config.json:', err.message);
+  console.error('[FATAL] JSON malformato in config/config.json:', err.message);
   process.exit(1);
 }
 const timingPath       = config.database && config.database.timingPath;
 const associationsPath = config.database && config.database.associationsPath;
 if (!timingPath || !associationsPath) {
   console.error(
-    '[FATAL] Devi specificare in config.json:\n' +
+    '[FATAL] Devi specificare in config/config.json:\n' +
     '  "database": {\n' +
     '    "timingPath": "./data/timing.db",\n' +
     '    "associationsPath": "./data/associations.db"\n' +
@@ -36,14 +36,11 @@ if (!timingPath || !associationsPath) {
   const dir = path.dirname(p);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
-    console.log('[DEBUG] Creato directory:', dir);
   }
 });
 
 // --- Apertura DB separati ---
-console.log('[DEBUG] Apro timing DB in', timingPath);
 const timingDb = new sqlite3.Database(timingPath);
-console.log('[DEBUG] Apro associations DB in', associationsPath);
 const assocDb = new sqlite3.Database(associationsPath);
 
 // --- Inizializzo tabelle e allego assocdb ---
@@ -56,13 +53,12 @@ timingDb.serialize(() => {
       elapsed_ms INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-  `, () => console.log('[DEBUG] Tabella timings pronta'));
+  `);
 
   timingDb.run(
     `ATTACH DATABASE '${associationsPath}' AS assocdb`,
     err => {
       if (err) console.error('[ERROR] ATTACH assocdb:', err.message);
-      else console.log('[DEBUG] AssocDB allegato come "assocdb"');
     }
   );
 });
@@ -74,7 +70,7 @@ assocDb.serialize(() => {
       name TEXT NOT NULL,
       color TEXT
     )
-  `, () => console.log('[DEBUG] Tabella tags pronta'));
+  `);
 
   // Aggiorna schema esistente aggiungendo la colonna color se mancante
   assocDb.run(`ALTER TABLE tags ADD COLUMN color TEXT`, err => {
@@ -104,12 +100,10 @@ client.on('connect', () => {
     config.mqtt.topicEnd
   ], err => {
     if (err) console.error('[ERROR] subscribe MQTT:', err.message);
-    else console.log('[DEBUG] Subscribed to all MQTT topics');
   });
 });
 client.on('message', (topic, message) => {
   const payload = message.toString().trim().toLowerCase();
-  console.log(`[DEBUG][MQTT] ${topic} → ${payload}`);
 
   if (topic === config.mqtt.topicStatusStartGate) {
     statusStartGate = payload === 'online';
@@ -173,9 +167,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Debug HTTP
+// Log HTTP requests
 app.use((req, res, next) => {
-  console.log(`[DEBUG][HTTP] ${req.method} ${req.url}`);
+  console.log(`${req.method} ${req.url}`);
   next();
 });
 
