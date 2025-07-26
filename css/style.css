@@ -137,13 +137,27 @@ form {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 0.5rem;
   align-items: center;
   justify-items: center;
 }
 .span-2 {
   grid-column: span 2;
+}
+
+/* Grid layout for wide screens */
+@media (min-width: 601px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'uid color'
+      'manual name';
+  }
+  .form-grid .uid-select   { grid-area: uid; }
+  .form-grid .uid-manual   { grid-area: manual; }
+  .form-grid .color-select { grid-area: color; }
+  .form-grid .name-input   { grid-area: name; }
 }
 
 input {
@@ -190,8 +204,11 @@ button:hover { background: var(--nav-hover); }
 /* Responsive */
 @media (max-width: 600px) {
   .start-time-col { display: none; }
-  input, select, button {
+  input, select {
     width: 100%;
+    margin-bottom: 8px;
+  }
+  button {
     margin-bottom: 8px;
   }
   table button {
