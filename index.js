@@ -115,10 +115,12 @@ client.on('message', (topic, message) => {
   }
   if (topic === config.mqtt.topicTag) {
     lastTagUUID = message.toString().trim();
+    console.log('[DEBUG] UUID ricevuto:', lastTagUUID);
     return;
   }
   if (topic === config.mqtt.topicStart) {
     lastStartRaw = message.toString().trim();
+    console.log('[DEBUG] Start ricevuto:', lastStartRaw);
     const [h,m,s,cs] = lastStartRaw.split(/[:.]/).map(Number);
     lastStartDate = new Date();
     lastStartDate.setHours(h,m,s,cs*10);
@@ -128,6 +130,7 @@ client.on('message', (topic, message) => {
   }
   if (topic === config.mqtt.topicEnd && lastStartDate) {
     const endRaw = message.toString().trim();
+    console.log('[DEBUG] Stop ricevuto:', endRaw);
     const [h2,m2,s2,cs2] = endRaw.split(/[:.]/).map(Number);
     const endDate = new Date();
     endDate.setHours(h2,m2,s2,cs2*10);
@@ -144,7 +147,10 @@ client.on('message', (topic, message) => {
     );
 
     lastStartRaw = lastStartDate = lastStartTag = null;
+    return;
   }
+
+  console.log('[DEBUG] Messaggio non riconosciuto:', topic, message.toString().trim());
 });
 
 // --- Express Web Server ---
