@@ -9,6 +9,7 @@
   --table-header-bg: #e0e0e0;
   --table-body-bg: #ffffff;
   --table-border: #cccccc;
+  --selected-border: #000000;
 }
 
 body.dark-mode {
@@ -20,6 +21,7 @@ body.dark-mode {
   --table-header-bg: #2c2c2c;
   --table-body-bg: #1e1e1e;
   --table-border: #444444;
+  --selected-border: #ffffff;
 }
 
 * { box-sizing: border-box; }
@@ -227,6 +229,6 @@ button:hover { background: var(--nav-hover); }
 }
 
 .color-option.selected {
-  border-color: #ffffff;
-  box-shadow: 0 0 0 2px #ffffff;
+  border-color: var(--selected-border);
+  box-shadow: 0 0 0 2px var(--selected-border);
 }

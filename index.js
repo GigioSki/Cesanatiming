@@ -206,35 +206,45 @@ app.get('/api/timings', (req, res) => {
   timingDb.all(sql, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
 
+    const bestByUuid = {};
+    rows.forEach(r => {
+      if (!bestByUuid[r.tag_id] || r.elapsed_ms < bestByUuid[r.tag_id]) {
+        bestByUuid[r.tag_id] = r.elapsed_ms;
+      }
+    });
+
     const format = ms => {
-      const pad = (n,z=2)=>('00'+n).slice(-z);
-      const h  = Math.floor(ms/3600000),
-            m  = Math.floor((ms%3600000)/60000),
-            s  = Math.floor((ms%60000)/1000),
-            cs = Math.floor((ms%1000)/10);
+      const pad = (n, z = 2) => ('00' + n).slice(-z);
+      const h = Math.floor(ms / 3600000),
+        m = Math.floor((ms % 3600000) / 60000),
+        s = Math.floor((ms % 60000) / 1000),
+        cs = Math.floor((ms % 1000) / 10);
       if (h > 0) {
         return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(cs)}`;
       }
       return `${m}:${pad(s)}.${pad(cs)}`;
     };
 
-    res.json(rows.map(r => {
-      let displayName;
-      if (r.tag_name) {
-        displayName = r.tag_name;
-      } else if (r.tag_id && r.tag_id !== 'Sconosciuto') {
-        displayName = r.tag_id;
-      } else {
-        displayName = 'Sconosciuto';
-      }
-      return {
-        name:       displayName,
-        start_time: r.start_time,
-        elapsed:    format(r.elapsed_ms),
-        created_at: r.created_at,
-        color:      r.tag_color
-      };
-    }));
+    res.json(
+      rows.map(r => {
+        let displayName;
+        if (r.tag_name) {
+          displayName = r.tag_name;
+        } else if (r.tag_id && r.tag_id !== 'Sconosciuto') {
+          displayName = r.tag_id;
+        } else {
+          displayName = 'Sconosciuto';
+        }
+        return {
+          name: displayName,
+          start_time: r.start_time,
+          elapsed: format(r.elapsed_ms),
+          created_at: r.created_at,
+          color: r.tag_color,
+          best: r.elapsed_ms === bestByUuid[r.tag_id]
+        };
+      })
+    );
   });
 });
 

@@ -67,7 +67,8 @@
           <td class="start-time-col">${r.start_time}</td>
         `;
         if(r.color){
-          tr.style.backgroundColor = hexToRGBA(r.color, 0.2);
+          const alpha = r.best ? 0.4 : 0.2;
+          tr.style.backgroundColor = hexToRGBA(r.color, alpha);
         }
         tbody.appendChild(tr);
       });
