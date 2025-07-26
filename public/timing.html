@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tempi Live - Cesana Timing</title>
+  <title>Tempi - Cesana Timing</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="timing.html" class="nav-link active">Tempi Live</a>
+      <a href="timing.html" class="nav-link active">Tempi</a>
       <a href="setup.html" class="nav-link">Setup</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
   </header>
 
   <main class="container">
-    <h1>Tempi Live</h1>
+    <h1>Tempi</h1>
     <table>
       <thead>
         <tr>
@@ -57,6 +57,9 @@
           <td>${r.elapsed}</td>
           <td class="start-time-col">${r.start_time}</td>
         `;
+        if(r.color){
+          tr.style.backgroundColor = r.color;
+        }
         tbody.appendChild(tr);
       });
     }

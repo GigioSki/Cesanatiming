@@ -71,9 +71,17 @@ assocDb.serialize(() => {
   assocDb.run(`
     CREATE TABLE IF NOT EXISTS tags (
       uuid TEXT PRIMARY KEY,
-      name TEXT NOT NULL
+      name TEXT NOT NULL,
+      color TEXT
     )
   `, () => console.log('[DEBUG] Tabella tags pronta'));
+
+  // Aggiorna schema esistente aggiungendo la colonna color se mancante
+  assocDb.run(`ALTER TABLE tags ADD COLUMN color TEXT`, err => {
+    if (err && !/duplicate column/.test(err.message)) {
+      console.error('[ERROR] ALTER TABLE tags:', err.message);
+    }
+  });
 });
 
 // --- Stato gates e variabili temporanee cronometro ---
@@ -180,6 +188,7 @@ app.get('/api/timings', (req, res) => {
     SELECT
       t.tag_id,
       assocdb.tags.name   AS tag_name,
+      assocdb.tags.color  AS tag_color,
       t.start_time,
       t.elapsed_ms,
       t.created_at
@@ -197,7 +206,10 @@ app.get('/api/timings', (req, res) => {
             m  = Math.floor((ms%3600000)/60000),
             s  = Math.floor((ms%60000)/1000),
             cs = Math.floor((ms%1000)/10);
-      return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(cs)}`;
+      if (h > 0) {
+        return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(cs)}`;
+      }
+      return `${m}:${pad(s)}.${pad(cs)}`;
     };
 
     res.json(rows.map(r => {
@@ -213,7 +225,8 @@ app.get('/api/timings', (req, res) => {
         name:       displayName,
         start_time: r.start_time,
         elapsed:    format(r.elapsed_ms),
-        created_at: r.created_at
+        created_at: r.created_at,
+        color:      r.tag_color
       };
     }));
   });
@@ -226,16 +239,16 @@ app.get('/api/status', (req, res) => {
 
 // --- API Tags CRUD ---
 app.get('/api/tags', (req, res) => {
-  assocDb.all(`SELECT uuid,name FROM tags`, (err, rows) => {
+  assocDb.all(`SELECT uuid,name,color FROM tags`, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 app.post('/api/tags', (req, res) => {
-  const { uuid, name } = req.body;
+  const { uuid, name, color } = req.body;
   assocDb.run(
-    `INSERT OR REPLACE INTO tags(uuid,name) VALUES(?,?)`,
-    [uuid.trim(), name.trim()],
+    `INSERT OR REPLACE INTO tags(uuid,name,color) VALUES(?,?,?)`,
+    [uuid.trim(), name.trim(), color || null],
     err => err
       ? res.status(500).json({ error: err.message })
       : res.sendStatus(200)
