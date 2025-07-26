@@ -211,24 +211,3 @@ button:hover { background: var(--nav-hover); }
   margin: 1rem 0 0.5rem;
 }
 
-/* Color picker */
-.color-picker {
-  display: grid;
-  grid-template-columns: repeat(4, 24px);
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.color-option {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-}
-
-.color-option.selected {
-  border-color: var(--selected-border);
-  box-shadow: 0 0 0 2px var(--selected-border);
-}
