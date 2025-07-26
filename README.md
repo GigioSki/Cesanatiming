@@ -9,7 +9,7 @@ Applicazione Node.js per gestire un semplice sistema di cronometraggio tramite M
    ```bash
    npm install
    ```
-3. Configura `config.json` impostando credenziali MQTT, porta del web server e percorsi dei database.
+3. Configura `config/config.json` impostando credenziali MQTT, porta del web server e percorsi dei database.
 4. Avvia il server:
    ```bash
    node index.js
@@ -21,6 +21,7 @@ Applicazione Node.js per gestire un semplice sistema di cronometraggio tramite M
 - **html/** contiene i file HTML (`timing.html` e `setup.html`).
 - **css/** contiene i fogli di stile.
 - **data/** verrà creata automaticamente e conterrà i database SQLite.
+- **config/** contiene il file `config.json` con le impostazioni dell'applicazione.
 
 ## Utilizzo
 
