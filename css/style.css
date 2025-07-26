@@ -142,6 +142,9 @@ form {
   align-items: center;
   justify-items: center;
 }
+.span-2 {
+  grid-column: span 2;
+}
 
 input {
   width: 100%;
@@ -151,6 +154,8 @@ input {
   border: 1px solid var(--table-border);
   background: var(--bg-color);
   color: var(--text-color);
+  border-radius: 0.25rem;
+  font-size: 1rem;
 }
 select {
   width: 100%;
