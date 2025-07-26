@@ -30,6 +30,21 @@ La porta `3000` sarà esposta e le cartelle `config` e `data` verranno
 montate come volumi per permettere la personalizzazione delle impostazioni e
 la persistenza dei database.
 
+## Pubblicazione su Docker Hub
+
+Per creare e caricare l'immagine:
+
+```bash
+# build
+docker build -t <tuo-utente>/cesana-timing:latest .
+# login (una volta sola)
+docker login
+# push
+docker push <tuo-utente>/cesana-timing:latest
+```
+
+Sostituisci `<tuo-utente>` con il tuo nome su Docker Hub.
+
 ## Struttura cartelle
 
 - **html/** contiene i file HTML (`timing.html` e `setup.html`).
