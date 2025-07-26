@@ -179,8 +179,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files (timing.html di default)
-app.use(express.static(path.join(__dirname, 'public'), { index: 'timing.html' }));
+// Serve static files separati per HTML e CSS (timing.html di default)
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use(express.static(path.join(__dirname, 'html'), { index: 'timing.html' }));
 
 // --- API: elenco cronometri con logica nome/UUID/Sconosciuto ---
 app.get('/api/timings', (req, res) => {

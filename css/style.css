@@ -190,8 +190,8 @@ button:hover { background: var(--nav-hover); }
     width: auto;
     margin: 0;
   }
-  .color-picker {
-    grid-template-columns: repeat(4, 24px);
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -211,7 +211,7 @@ button:hover { background: var(--nav-hover); }
 /* Color picker */
 .color-picker {
   display: grid;
-  grid-template-columns: repeat(8, 24px);
+  grid-template-columns: repeat(4, 24px);
   justify-content: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
