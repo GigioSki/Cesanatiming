@@ -62,7 +62,7 @@
       data.forEach(r => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${r.name}${r.best ? ' ☆' : ''}</td>
+          <td>${r.best ? '☆ ' : ''}${r.name}</td>
           <td>${r.elapsed}</td>
           <td class="start-time-col">${r.start_time}</td>
         `;

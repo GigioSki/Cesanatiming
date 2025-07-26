@@ -44,7 +44,7 @@
           <input type="text" id="name" placeholder="Nome utente" required>
         </div>
         <div>
-          <div id="color-picker" class="color-picker"></div>
+          <select id="color-select"></select>
         </div>
       </div>
       <button type="submit">Salva</button>
@@ -113,38 +113,43 @@
     const form = document.getElementById('form'),
           uuidSel = document.getElementById('uuid'),
           uuidManual = document.getElementById('uuid-manual'),
-          colorPicker = document.getElementById('color-picker'),
+          colorSelect = document.getElementById('color-select'),
           tagsTbody = document.getElementById('tags-tbody');
     const colors = [
-      '#ff0000', '#ff8000', '#ffff00', '#80ff80',
-      '#008000', '#00c8ff', '#0000ff', '#8000ff'
+      { name: 'Rosso',        hex: '#ff0000' },
+      { name: 'Arancione',    hex: '#ff8000' },
+      { name: 'Giallo',       hex: '#ffff00' },
+      { name: 'Verde chiaro', hex: '#80ff80' },
+      { name: 'Verde',        hex: '#008000' },
+      { name: 'Azzurro',      hex: '#00c8ff' },
+      { name: 'Blu',          hex: '#0000ff' },
+      { name: 'Viola',        hex: '#8000ff' }
     ];
-    let selectedColor = null;
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = 'Seleziona colore';
+    ph.disabled = true;
+    ph.selected = true;
+    colorSelect.appendChild(ph);
     colors.forEach(c => {
-      const d = document.createElement('div');
-      d.className = 'color-option';
-      d.style.backgroundColor = hexToRGBA(c, 0.2);
-      d.style.borderColor = c;
-      d.addEventListener('click', () => {
-        selectedColor = c;
-        document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
-        d.classList.add('selected');
-      });
-      colorPicker.appendChild(d);
+      const opt = document.createElement('option');
+      opt.value = c.hex;
+      opt.textContent = `\u25CF ${c.name}`; // bullet + name
+      opt.style.color = c.hex;
+      colorSelect.appendChild(opt);
     });
     form.addEventListener('submit', async e=>{
       e.preventDefault();
       const uuid = (uuidManual.value.trim()) || uuidSel.value,
             name = document.getElementById('name').value.trim();
       if(!uuid || !name) return;
+      const color = colorSelect.value || null;
       await fetch('/api/tags',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({uuid,name,color:selectedColor})
+        body:JSON.stringify({uuid,name,color})
       });
       form.reset();
-      selectedColor = null;
-      document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
       loadTags();
       loadUnassigned();
     });
