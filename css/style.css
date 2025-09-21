@@ -233,3 +233,188 @@ button:hover { background: var(--nav-hover); }
   margin: 1rem 0 0.5rem;
 }
 
+
+/* Admin & race pages */
+.admin-container, .race-manage, .race-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-section, .race-section {
+  background: var(--table-body-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.event-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.current-info h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.event-card {
+  border: 1px solid var(--table-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.event-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.event-card .event-status {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.next-start {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.next-start-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.race-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.race-options h3 {
+  margin-top: 0;
+}
+
+.override-box, .pointer-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.participants-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.participants-actions label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.import-button {
+  position: relative;
+  overflow: hidden;
+  border: 1px dashed var(--table-border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.import-button input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.participants-table input {
+  width: 100%;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.heats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heats-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.heat-card {
+  border: 1px solid var(--table-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-color);
+}
+
+.heat-card.active {
+  border-color: var(--button-bg);
+  box-shadow: 0 0 10px rgba(25, 118, 210, 0.25);
+}
+
+.heat-section {
+  margin-bottom: 2rem;
+}
+
+.heat-section h2 {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .event-highlight {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .race-options {
+    grid-template-columns: 1fr;
+  }
+}
