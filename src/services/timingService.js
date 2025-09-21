@@ -39,11 +39,12 @@ async function recordTiming({
   bibNumber = null,
   heatId = null,
   heatName = null,
-  lap = 1
+  lap = 1,
+  status = 'completed'
 }) {
   await run(
-    `INSERT INTO timings(tag_id, start_time, elapsed_ms, event_id, participant_id, bib_number, heat_id, heat_name, lap)
-     VALUES(?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO timings(tag_id, start_time, elapsed_ms, event_id, participant_id, bib_number, heat_id, heat_name, lap, status)
+     VALUES(?,?,?,?,?,?,?,?,?,?)`,
     [
       tagId || 'Sconosciuto',
       startTime,
@@ -53,7 +54,8 @@ async function recordTiming({
       bibNumber,
       heatId,
       heatName,
-      lap
+      lap,
+      status
     ]
   );
 }
@@ -77,6 +79,7 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
        t.bib_number,
        t.heat_id,
        t.heat_name,
+       t.status,
        assocdb.tags.name  AS tag_name,
        assocdb.tags.color AS tag_color
      FROM timings t
@@ -89,6 +92,7 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
 
   const bestByUuid = {};
   rows.forEach(r => {
+    if (r.status === 'dnf') return;
     const key = r.tag_id || `bib:${r.bib_number || ''}`;
     if (!bestByUuid[key] || r.elapsed_ms < bestByUuid[key]) {
       bestByUuid[key] = r.elapsed_ms;
@@ -108,23 +112,26 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
     } else {
       displayName = 'Sconosciuto';
     }
+    const key = r.tag_id || `bib:${r.bib_number || ''}`;
+    const isDnf = r.status === 'dnf';
     return {
       id: r.id,
       name: displayName,
       start_time: r.start_time,
-      elapsed: formatMs(r.elapsed_ms),
+      elapsed: isDnf ? 'DNF' : formatMs(r.elapsed_ms),
       created_at: r.created_at,
       color: r.tag_color,
-      best: r.elapsed_ms === bestByUuid[r.tag_id || `bib:${r.bib_number || ''}`],
+      best: !isDnf && bestByUuid[key] != null && r.elapsed_ms === bestByUuid[key],
       bib_number: r.bib_number,
-      heat_name: r.heat_name
+      heat_name: r.heat_name,
+      status: r.status
     };
   });
 }
 
 async function listRawTimings(eventId) {
   const rows = await all(
-    `SELECT id, tag_id, start_time, elapsed_ms, created_at, event_id, participant_id, bib_number, heat_id, heat_name
+    `SELECT id, tag_id, start_time, elapsed_ms, created_at, event_id, participant_id, bib_number, heat_id, heat_name, status
      FROM timings
      WHERE event_id = ?
      ORDER BY created_at ASC`,

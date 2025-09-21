@@ -45,6 +45,7 @@ function initializeTimingDb() {
     addColumn(timingDb, 'timings', 'heat_id INTEGER');
     addColumn(timingDb, 'timings', 'heat_name TEXT');
     addColumn(timingDb, 'timings', 'lap INTEGER DEFAULT 1');
+    addColumn(timingDb, 'timings', "status TEXT NOT NULL DEFAULT 'completed'");
 
     timingDb.run(`
       CREATE TABLE IF NOT EXISTS events (
