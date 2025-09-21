@@ -6,6 +6,7 @@ const {
   getEventById,
   getEventBySlug,
   getEventByCode,
+  getActiveEvent,
   setActiveEvent,
   closeEvent,
   updateEventConfig,
@@ -62,6 +63,19 @@ router.get('/lookup', async (req, res) => {
       return res.json(event);
     }
     return res.status(400).json({ error: 'Parametro slug o code richiesto' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/active', async (_req, res) => {
+  try {
+    const active = await getActiveEvent();
+    if (!active) {
+      return res.status(404).json({ error: 'Nessun evento attivo' });
+    }
+    const event = await getEventById(active.id);
+    res.json(event);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

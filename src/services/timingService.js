@@ -81,9 +81,14 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
        t.heat_name,
        t.status,
        assocdb.tags.name  AS tag_name,
-       assocdb.tags.color AS tag_color
+       assocdb.tags.color AS tag_color,
+       participant.name  AS participant_name,
+       bib_participant.name AS bib_participant_name
      FROM timings t
      LEFT JOIN assocdb.tags ON t.tag_id = assocdb.tags.uuid
+     LEFT JOIN participants AS participant ON t.participant_id = participant.id
+     LEFT JOIN participants AS bib_participant
+       ON bib_participant.event_id = t.event_id AND bib_participant.bib_number = t.bib_number
      ${where}
      ORDER BY t.created_at DESC
      LIMIT ?`,
@@ -103,7 +108,10 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
 
   return rows.map(r => {
     let displayName;
-    if (r.tag_name) {
+    const participantName = r.participant_name || r.bib_participant_name;
+    if (participantName) {
+      displayName = participantName;
+    } else if (r.tag_name) {
       displayName = r.tag_name;
     } else if (r.bib_number != null) {
       displayName = `Pettorale ${r.bib_number}`;
@@ -119,6 +127,7 @@ async function listTimings({ limit = 100, eventId = null } = {}) {
       name: displayName,
       start_time: r.start_time,
       elapsed: isDnf ? 'DNF' : formatMs(r.elapsed_ms),
+      elapsed_ms: r.elapsed_ms,
       created_at: r.created_at,
       color: r.tag_color,
       best: !isDnf && bestByUuid[key] != null && r.elapsed_ms === bestByUuid[key],

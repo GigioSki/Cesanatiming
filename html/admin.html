@@ -11,6 +11,7 @@
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
       <a href="/live" class="nav-link">Tempi</a>
+      <a href="/classifiche" class="nav-link">Classifiche</a>
       <a href="/admin" class="nav-link active">Admin</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -185,13 +186,12 @@
       });
 
       const liveBtn = document.createElement('button');
-      liveBtn.textContent = 'Apri live';
+      liveBtn.textContent = event.status === 'active' ? 'Apri live' : 'Tempi';
       liveBtn.addEventListener('click', () => {
         window.open(paths.live, '_blank');
       });
 
       const renameBtn = document.createElement('button');
-      renameBtn.className = 'ghost-button';
       renameBtn.textContent = 'Rinomina';
       renameBtn.addEventListener('click', () => renameEvent(event));
 
@@ -220,7 +220,6 @@
         live.addEventListener('click', () => { window.open(paths.live, '_blank'); });
 
         const rename = document.createElement('button');
-        rename.className = 'ghost-button';
         rename.textContent = 'Rinomina';
         rename.addEventListener('click', () => renameEvent(event));
 
@@ -237,11 +236,10 @@
       }
 
       const live = document.createElement('button');
-      live.textContent = 'Apri live';
+      live.textContent = 'Tempi';
       live.addEventListener('click', () => { window.open(paths.live, '_blank'); });
 
       const rename = document.createElement('button');
-      rename.className = 'ghost-button';
       rename.textContent = 'Rinomina';
       rename.addEventListener('click', () => renameEvent(event));
 

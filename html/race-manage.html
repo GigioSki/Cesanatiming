@@ -11,6 +11,7 @@
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
       <a href="/live" class="nav-link">Tempi</a>
+      <a href="/classifiche" class="nav-link">Classifiche</a>
       <a href="/admin" class="nav-link active">Admin</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -29,23 +30,29 @@
     <section class="race-section">
       <h2>Opzioni di gara</h2>
       <div class="race-options">
-        <div class="toggle-control">
-          <span>Braccialetto</span>
-          <label class="switch">
-            <input type="checkbox" id="start-mode-toggle">
-            <span class="slider"></span>
-          </label>
-          <span>Pettorale</span>
+        <div class="option-card">
+          <h3>Modalità partenza</h3>
+          <div class="toggle-control">
+            <span>Braccialetto</span>
+            <label class="switch">
+              <input type="checkbox" id="start-mode-toggle">
+              <span class="slider"></span>
+            </label>
+            <span>Pettorale</span>
+          </div>
         </div>
-        <div class="toggle-control">
-          <span>Normale</span>
-          <label class="switch">
-            <input type="checkbox" id="start-order-toggle">
-            <span class="slider"></span>
-          </label>
-          <span>Invertito</span>
+        <div class="option-card">
+          <h3>Ordine di partenza</h3>
+          <div class="toggle-control">
+            <span>Normale</span>
+            <label class="switch">
+              <input type="checkbox" id="start-order-toggle">
+              <span class="slider"></span>
+            </label>
+            <span>Invertito</span>
+          </div>
         </div>
-        <div class="override-box">
+        <div class="option-card override-box">
           <h3>Sovrascrivi partenza</h3>
           <input type="number" id="override-input" placeholder="Numero pettorale">
           <div class="override-actions">
@@ -53,7 +60,7 @@
             <button id="clear-override" class="ghost-button">Annulla</button>
           </div>
         </div>
-        <div class="pointer-box">
+        <div class="option-card pointer-box">
           <h3>Indice partenza</h3>
           <p id="pointer-info">—</p>
           <p class="help-text">Indica la posizione corrente nella lista di partenza.</p>
