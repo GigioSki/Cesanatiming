@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gestione Gara - Cesana Timing</title>
+  <title>Gestione Allenamento - Cesana Timing</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -18,48 +18,8 @@
 
   <main class="container race-manage">
     <section class="race-section race-summary">
-      <h1 id="race-title">Gestione Gara</h1>
-      <p id="race-info">Caricamento…</p>
-      <div class="next-start">
-        <h2>Prossima partenza</h2>
-        <div id="next-start-value" class="next-start-value">—</div>
-      </div>
-    </section>
-
-    <section class="race-section">
-      <h2>Opzioni di gara</h2>
-      <div class="race-options">
-        <div class="toggle-control">
-          <span>Braccialetto</span>
-          <label class="switch">
-            <input type="checkbox" id="start-mode-toggle">
-            <span class="slider"></span>
-          </label>
-          <span>Pettorale</span>
-        </div>
-        <div class="toggle-control">
-          <span>Normale</span>
-          <label class="switch">
-            <input type="checkbox" id="start-order-toggle">
-            <span class="slider"></span>
-          </label>
-          <span>Invertito</span>
-        </div>
-        <div class="override-box">
-          <h3>Sovrascrivi partenza</h3>
-          <input type="number" id="override-input" placeholder="Numero pettorale">
-          <div class="override-actions">
-            <button id="override-btn">Imposta</button>
-            <button id="clear-override" class="ghost-button">Annulla</button>
-          </div>
-        </div>
-        <div class="pointer-box">
-          <h3>Indice partenza</h3>
-          <p id="pointer-info">—</p>
-          <p class="help-text">Indica la posizione corrente nella lista di partenza.</p>
-          <button id="reset-pointer" class="ghost-button">Reset ordine</button>
-        </div>
-      </div>
+      <h1 id="training-title">Gestione Allenamento</h1>
+      <p id="training-info">Caricamento…</p>
     </section>
 
     <section class="race-section">
@@ -136,48 +96,12 @@
       return `${parts[0]}/${parts[1]}`;
     }
 
-    function sortParticipants(startOrder) {
-      const apripista = state.participants.find(p => p.bib_number === 0);
-      const others = state.participants
-        .filter(p => p.bib_number != null && p.bib_number !== 0)
-        .sort((a, b) => (a.bib_number || 0) - (b.bib_number || 0));
-      if (startOrder === 'reverse') {
-        others.reverse();
-      }
-      const queue = [];
-      if (apripista) queue.push(apripista);
-      queue.push(...others);
-      return queue;
-    }
-
-    function parseMetadata(meta) {
-      if (!meta) return {};
-      try { return JSON.parse(meta); } catch { return {}; }
-    }
-
-    function computeNextStart() {
-      if (!state.event) return '—';
-      const metadata = parseMetadata(state.event.metadata);
-      if (metadata.overrideBib != null) {
-        return metadata.overrideBib;
-      }
-      const queue = sortParticipants(state.event.start_order || 'normal');
-      if (!queue.length) return '—';
-      const pointer = state.event.next_pointer || 0;
-      if (pointer >= queue.length) return queue[queue.length - 1].bib_number ?? '—';
-      return queue[pointer].bib_number ?? '—';
-    }
-
     function renderInfo() {
       if (!state.event) return;
-      document.getElementById('race-title').textContent = `${state.event.name || 'Gara'} (${state.event.slug})`;
-      document.getElementById('race-info').innerHTML = `
+      document.getElementById('training-title').textContent = `${state.event.name || 'Allenamento'} (${state.event.slug})`;
+      document.getElementById('training-info').innerHTML = `
         Stato: <strong>${state.event.status}</strong> · Tempi: <strong>${state.event.timings_count}</strong> · Partecipanti: <strong>${state.event.participants_count}</strong>
       `;
-      document.getElementById('next-start-value').textContent = computeNextStart();
-      document.getElementById('pointer-info').textContent = `Indice corrente: ${state.event.next_pointer || 0}`;
-      document.getElementById('start-mode-toggle').checked = (state.event.start_mode || 'bracelet') === 'bib';
-      document.getElementById('start-order-toggle').checked = (state.event.start_order || 'normal') === 'reverse';
       const total = state.participants.filter(p => p.bib_number != null && p.bib_number !== 0).length;
       const totalInput = document.getElementById('participants-total');
       if (document.activeElement !== totalInput) {
@@ -231,6 +155,8 @@
         if (state.event.current_heat_id === heat.id) {
           div.classList.add('active');
         }
+        const title = document.createElement('span');
+        title.textContent = heat.name;
         const actions = document.createElement('div');
         actions.className = 'heat-actions';
         const renameBtn = document.createElement('button');
@@ -241,8 +167,6 @@
         setBtn.textContent = 'Attiva';
         setBtn.dataset.heat = heat.id;
         actions.append(renameBtn, setBtn);
-        const title = document.createElement('span');
-        title.textContent = heat.name;
         div.append(title, actions);
         container.appendChild(div);
       });
@@ -281,7 +205,7 @@
       try {
         const lookup = await fetch(`/api/events/lookup?slug=${encodeURIComponent(slug)}`);
         if (!lookup.ok) {
-          document.getElementById('race-info').textContent = 'Evento non trovato';
+          document.getElementById('training-info').textContent = 'Evento non trovato';
           return;
         }
         const base = await lookup.json();
@@ -294,7 +218,7 @@
         renderParticipants();
         renderHeats();
       } catch (err) {
-        console.error('Errore caricamento gara', err);
+        console.error('Errore caricamento allenamento', err);
       }
     }
 
@@ -385,28 +309,6 @@
       loadData();
     }
 
-    document.getElementById('start-mode-toggle').addEventListener('change', async (e) => {
-      if (!state.event) return;
-      const mode = e.target.checked ? 'bib' : 'bracelet';
-      await fetch(`/api/events/${state.event.id}/config`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start_mode: mode })
-      });
-      loadData();
-    });
-
-    document.getElementById('start-order-toggle').addEventListener('change', async (e) => {
-      if (!state.event) return;
-      const order = e.target.checked ? 'reverse' : 'normal';
-      await fetch(`/api/events/${state.event.id}/config`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start_order: order })
-      });
-      loadData();
-    });
-
     document.getElementById('reset-participants').addEventListener('click', async () => {
       if (!state.event) return;
       const total = Number(document.getElementById('participants-total').value || 0);
@@ -414,37 +316,6 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ total })
-      });
-      loadData();
-    });
-
-    document.getElementById('override-btn').addEventListener('click', async () => {
-      if (!state.event) return;
-      const value = document.getElementById('override-input').value;
-      await fetch(`/api/events/${state.event.id}/override`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bibNumber: value })
-      });
-      loadData();
-    });
-
-    document.getElementById('clear-override').addEventListener('click', async () => {
-      if (!state.event) return;
-      await fetch(`/api/events/${state.event.id}/override`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bibNumber: null })
-      });
-      loadData();
-    });
-
-    document.getElementById('reset-pointer').addEventListener('click', async () => {
-      if (!state.event) return;
-      await fetch(`/api/events/${state.event.id}/pointer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pointer: 0 })
       });
       loadData();
     });

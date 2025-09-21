@@ -10,8 +10,7 @@
   <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="/timing.html" class="nav-link">Tempi</a>
-      <a href="/setup.html" class="nav-link">Setup</a>
+      <a href="/live" class="nav-link">Tempi</a>
       <a href="/admin" class="nav-link active">Admin</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -25,8 +24,16 @@
       </div>
     </section>
 
-    <section class="status-section">
-      <h2>Status Cronometro</h2>
+    <section class="admin-section admin-create">
+      <h2>Nuovo evento</h2>
+      <div class="event-actions centered">
+        <button id="create-training">Crea allenamento</button>
+        <button id="create-race">Crea gara</button>
+      </div>
+    </section>
+
+    <section class="admin-section status-section">
+      <h2>Status cronometro</h2>
       <div class="status-item">
         <div id="start-dot" class="status-dot status-offline"></div>
         <span>Start Gate: <span id="start-text">Offline</span></span>
@@ -38,16 +45,11 @@
     </section>
 
     <section class="admin-section">
-      <h2>Nuovo evento</h2>
-      <div class="event-actions">
-        <button id="create-training">Crea allenamento</button>
-        <button id="create-race">Crea gara</button>
+      <div class="admin-section-header">
+        <h2>Eventi</h2>
+        <button id="refresh-events" class="ghost-button">Aggiorna</button>
       </div>
-    </section>
-
-    <section class="admin-section">
-      <h2>Eventi</h2>
-      <div id="events-list" class="events-grid"></div>
+      <div id="events-list" class="events-list"></div>
     </section>
   </main>
 
@@ -68,16 +70,20 @@
   <script>
     const toggle = document.getElementById('theme-toggle');
     const currentTheme = localStorage.getItem('theme') || 'light';
-    document.body.classList.toggle('dark-mode', currentTheme==='dark');
-    toggle.textContent = currentTheme==='dark'?'☀️':'🌙';
+    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+    toggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
     toggle.addEventListener('click', () => {
       const isDark = document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', isDark?'dark':'light');
-      toggle.textContent = isDark?'☀️':'🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      toggle.textContent = isDark ? '☀️' : '🌙';
     });
 
+    const state = {
+      events: []
+    };
+
     function formatDate(value) {
-      if (!value) return '';
+      if (!value) return '—';
       const d = new Date(value);
       return d.toLocaleString('it-IT');
     }
@@ -86,21 +92,46 @@
       return event.type === 'race' ? 'Gara' : 'Allenamento';
     }
 
-    function buildPath(event, kind = 'view') {
-      if (!event) return '#';
-      if (event.type === 'race') {
-        return kind === 'manage' ? `/gara/${event.slug.split('/')[1]}/manage` : `/gara/${event.slug.split('/')[1]}`;
+    function formatStartMode(mode) {
+      if (!mode) return '—';
+      return mode === 'bib' ? 'Pettorale' : 'Braccialetto';
+    }
+
+    function formatOrder(order) {
+      if (!order) return '—';
+      return order === 'reverse' ? 'Invertito' : 'Normale';
+    }
+
+    function translateStatus(status) {
+      if (status === 'active') return 'Attivo';
+      if (status === 'completed') return 'Completato';
+      return status || '—';
+    }
+
+    function eventPaths(event) {
+      const code = event.slug?.split('/')[1];
+      if (!code) {
+        return { manage: '#', live: '#' };
       }
-      return `/allenamento/${event.slug.split('/')[1]}`;
+      if (event.type === 'race') {
+        return {
+          manage: `/gara/${code}/manage`,
+          live: `/gara/${code}`
+        };
+      }
+      return {
+        manage: `/allenamento/${code}/manage`,
+        live: `/allenamento/${code}`
+      };
     }
 
     async function loadStatus() {
       try {
         const res = await fetch('/api/status');
         const { startGate, stopGate } = await res.json();
-        document.getElementById('start-dot').className = `status-dot ${startGate?'status-online':'status-offline'}`;
+        document.getElementById('start-dot').className = `status-dot ${startGate ? 'status-online' : 'status-offline'}`;
         document.getElementById('start-text').textContent = startGate ? 'Online' : 'Offline';
-        document.getElementById('stop-dot').className = `status-dot ${stopGate?'status-online':'status-offline'}`;
+        document.getElementById('stop-dot').className = `status-dot ${stopGate ? 'status-online' : 'status-offline'}`;
         document.getElementById('stop-text').textContent = stopGate ? 'Online' : 'Offline';
       } catch (err) {
         console.error('Errore status:', err);
@@ -135,20 +166,35 @@
       }
       const info = document.createElement('div');
       info.className = 'current-info';
+      const typeLabel = describeType(event);
+      const code = event.slug?.split('/')[1] || '';
       info.innerHTML = `
-        <h3>${describeType(event)} ${event.slug.split('/')[1]}${event.name ? ' – ' + event.name : ''}</h3>
-        <p>Tempi registrati: <strong>${event.timings_count}</strong> | Partecipanti: <strong>${event.participants_count}</strong></p>
-        <p>Modalità partenza: <strong>${event.start_mode || '—'}</strong> | Ordine: <strong>${event.start_order || 'normal'}</strong></p>
+        <h3>${typeLabel} ${code}${event.name ? ' – ' + event.name : ''}</h3>
+        <p>Tempi registrati: <strong>${event.timings_count}</strong> · Partecipanti: <strong>${event.participants_count}</strong></p>
+        ${event.type === 'race' ? `<p>Modalità partenza: <strong>${formatStartMode(event.start_mode)}</strong> · Ordine: <strong>${formatOrder(event.start_order)}</strong></p>` : ''}
         <p>Creato: ${formatDate(event.created_at)}</p>
       `;
       const actions = document.createElement('div');
       actions.className = 'event-actions';
-      const openBtn = document.createElement('button');
-      openBtn.textContent = 'Apri pagina';
-      openBtn.addEventListener('click', () => {
-        const target = event.type === 'race' ? buildPath(event, 'manage') : buildPath(event);
-        window.location.href = target;
+      const paths = eventPaths(event);
+
+      const manageBtn = document.createElement('button');
+      manageBtn.textContent = 'Gestisci evento';
+      manageBtn.addEventListener('click', () => {
+        window.location.href = paths.manage;
       });
+
+      const liveBtn = document.createElement('button');
+      liveBtn.textContent = 'Apri live';
+      liveBtn.addEventListener('click', () => {
+        window.open(paths.live, '_blank');
+      });
+
+      const renameBtn = document.createElement('button');
+      renameBtn.className = 'ghost-button';
+      renameBtn.textContent = 'Rinomina';
+      renameBtn.addEventListener('click', () => renameEvent(event));
+
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Chiudi evento';
       closeBtn.addEventListener('click', async () => {
@@ -156,59 +202,79 @@
         await fetch(`/api/events/${event.id}/close`, { method: 'POST' });
         await loadEvents();
       });
-      actions.append(openBtn, closeBtn);
+
+      actions.append(manageBtn, liveBtn, renameBtn, closeBtn);
       container.append(info, actions);
     }
 
+    function buildCardActions(cardActions, event) {
+      const paths = eventPaths(event);
+
+      if (event.is_active) {
+        const manage = document.createElement('button');
+        manage.textContent = 'Gestisci evento';
+        manage.addEventListener('click', () => { window.location.href = paths.manage; });
+
+        const live = document.createElement('button');
+        live.textContent = 'Apri live';
+        live.addEventListener('click', () => { window.open(paths.live, '_blank'); });
+
+        const rename = document.createElement('button');
+        rename.className = 'ghost-button';
+        rename.textContent = 'Rinomina';
+        rename.addEventListener('click', () => renameEvent(event));
+
+        const close = document.createElement('button');
+        close.textContent = 'Chiudi evento';
+        close.addEventListener('click', async () => {
+          if (!confirm('Chiudere questo evento?')) return;
+          await fetch(`/api/events/${event.id}/close`, { method: 'POST' });
+          await loadEvents();
+        });
+
+        cardActions.append(manage, live, rename, close);
+        return;
+      }
+
+      const live = document.createElement('button');
+      live.textContent = 'Apri live';
+      live.addEventListener('click', () => { window.open(paths.live, '_blank'); });
+
+      const rename = document.createElement('button');
+      rename.className = 'ghost-button';
+      rename.textContent = 'Rinomina';
+      rename.addEventListener('click', () => renameEvent(event));
+
+      const remove = document.createElement('button');
+      remove.textContent = 'Cancella';
+      remove.addEventListener('click', () => deleteEvent(event));
+
+      cardActions.append(live, rename, remove);
+    }
+
     function renderEvents(events) {
-      const grid = document.getElementById('events-list');
-      grid.innerHTML = '';
+      const list = document.getElementById('events-list');
+      list.innerHTML = '';
       if (!events.length) {
-        grid.innerHTML = '<p>Nessun evento registrato.</p>';
+        list.innerHTML = '<p>Nessun evento registrato.</p>';
         return;
       }
       events.forEach(event => {
-        const tpl = document.getElementById('event-card-template');
-        const card = tpl.content.firstElementChild.cloneNode(true);
-        card.querySelector('.event-title').textContent = `${describeType(event)} ${event.slug.split('/')[1]}`;
+        const template = document.getElementById('event-card-template');
+        const card = template.content.firstElementChild.cloneNode(true);
+        const code = event.slug?.split('/')[1] || '';
+        card.querySelector('.event-title').textContent = `${describeType(event)} ${code}`;
         card.querySelector('.event-subtitle').textContent = event.name || '—';
-        card.querySelector('.event-status').textContent = event.status;
+        card.querySelector('.event-status').textContent = translateStatus(event.status);
         card.querySelector('.event-meta').innerHTML = `
-          <p>Tempi: <strong>${event.timings_count}</strong> | Partecipanti: <strong>${event.participants_count}</strong></p>
+          <p>Tempi: <strong>${event.timings_count}</strong> · Partecipanti: <strong>${event.participants_count}</strong></p>
           <p>Creato: ${formatDate(event.created_at)}</p>
         `;
-        const actions = card.querySelector('.event-actions');
-        const openBtn = document.createElement('button');
-        openBtn.textContent = event.type === 'race' ? 'Gestisci' : 'Apri';
-        openBtn.addEventListener('click', () => {
-          const target = event.type === 'race' ? buildPath(event, 'manage') : buildPath(event);
-          window.location.href = target;
-        });
-        const liveBtn = document.createElement('button');
-        liveBtn.textContent = 'Live';
-        liveBtn.addEventListener('click', () => {
-          const target = event.type === 'race' ? `/gara/${event.slug.split('/')[1]}` : buildPath(event);
-          window.open(target, '_blank');
-        });
-        actions.append(openBtn, liveBtn);
-        if (!event.is_active) {
-          const activateBtn = document.createElement('button');
-          activateBtn.textContent = 'Attiva';
-          activateBtn.addEventListener('click', async () => {
-            await fetch(`/api/events/${event.id}/activate`, { method: 'POST' });
-            await loadEvents();
-          });
-          actions.append(activateBtn);
-        } else {
-          const closeBtn = document.createElement('button');
-          closeBtn.textContent = 'Chiudi';
-          closeBtn.addEventListener('click', async () => {
-            await fetch(`/api/events/${event.id}/close`, { method: 'POST' });
-            await loadEvents();
-          });
-          actions.append(closeBtn);
+        if (event.is_active) {
+          card.classList.add('active');
         }
-        grid.appendChild(card);
+        buildCardActions(card.querySelector('.event-actions'), event);
+        list.appendChild(card);
       });
     }
 
@@ -216,7 +282,9 @@
       try {
         const res = await fetch('/api/events');
         const events = await res.json();
-        const current = events.find(e => e.is_active);
+        events.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        state.events = events;
+        const current = events.find(e => e.is_active) || null;
         renderCurrent(current);
         renderEvents(events);
       } catch (err) {
@@ -224,8 +292,42 @@
       }
     }
 
+    async function renameEvent(event) {
+      const currentName = event.name || '';
+      const value = prompt('Nuovo nome evento (lascia vuoto per nessun nome)', currentName);
+      if (value === null) return;
+      const trimmed = value.trim();
+      try {
+        const res = await fetch(`/api/events/${event.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: trimmed || null })
+        });
+        if (!res.ok) {
+          throw new Error('rename-failed');
+        }
+        await loadEvents();
+      } catch (err) {
+        alert('Errore durante la rinomina');
+      }
+    }
+
+    async function deleteEvent(event) {
+      if (!confirm(`Cancellare definitivamente ${describeType(event)} ${event.slug}?`)) return;
+      try {
+        const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          throw new Error('delete-failed');
+        }
+        await loadEvents();
+      } catch (err) {
+        alert('Errore durante la cancellazione');
+      }
+    }
+
     document.getElementById('create-training').addEventListener('click', () => createEvent('training'));
     document.getElementById('create-race').addEventListener('click', () => createEvent('race'));
+    document.getElementById('refresh-events').addEventListener('click', loadEvents);
 
     loadStatus();
     loadEvents();

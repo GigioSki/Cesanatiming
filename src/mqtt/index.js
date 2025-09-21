@@ -15,6 +15,30 @@ let lastStartRaw = null;
 let lastStartDate = null;
 let lastContext = null;
 
+async function recordPendingDnf() {
+  if (!lastStartDate || !lastStartRaw || !lastContext) {
+    return;
+  }
+  if (lastContext.eventType !== 'race' || !lastContext.eventId) {
+    return;
+  }
+  try {
+    await recordTiming({
+      tagId: lastContext.tagId,
+      startTime: lastStartRaw,
+      elapsedMs: 0,
+      eventId: lastContext.eventId,
+      participantId: lastContext.participantId,
+      bibNumber: lastContext.bibNumber,
+      heatId: lastContext.heatId,
+      heatName: lastContext.heatName,
+      status: 'dnf'
+    });
+  } catch (err) {
+    console.error('[ERROR] record DNF:', err.message);
+  }
+}
+
 function parseTimePayload(payload) {
   const [h = 0, m = 0, s = 0, cs = 0] = payload.split(/[:.]/).map(Number);
   const baseDate = new Date();
@@ -23,6 +47,7 @@ function parseTimePayload(payload) {
 }
 
 async function handleStart(payload) {
+  await recordPendingDnf();
   lastStartRaw = payload;
   lastStartDate = parseTimePayload(payload);
   const activeEvent = await getActiveEvent();
@@ -32,7 +57,8 @@ async function handleStart(payload) {
     participantId: null,
     bibNumber: null,
     heatId: activeEvent?.current_heat_id || null,
-    heatName: null
+    heatName: null,
+    eventType: activeEvent?.type || null
   };
 
   if (activeEvent?.current_heat_id) {
@@ -74,7 +100,8 @@ async function handleStop(payload) {
     participantId: null,
     bibNumber: null,
     heatId: null,
-    heatName: null
+    heatName: null,
+    eventType: null
   };
 
   try {
@@ -86,7 +113,8 @@ async function handleStop(payload) {
       participantId: context.participantId,
       bibNumber: context.bibNumber,
       heatId: context.heatId,
-      heatName: context.heatName
+      heatName: context.heatName,
+      status: 'completed'
     });
   } catch (err) {
     console.error('[ERROR] insert timing:', err.message);

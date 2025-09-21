@@ -10,8 +10,7 @@
     <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="/timing.html" class="nav-link active">Tempi</a>
-      <a href="/setup.html" class="nav-link">Setup</a>
+      <a href="/live" class="nav-link active">Tempi</a>
       <a href="/admin" class="nav-link">Admin</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
@@ -62,9 +61,10 @@
       tbody.innerHTML = '';
       data.forEach(r => {
         const tr = document.createElement('tr');
+        const timeHtml = r.status === 'dnf' ? '<span class="dnf">DNF</span>' : r.elapsed;
         tr.innerHTML = `
           <td>${r.best ? '☆ ' : ''}${r.name}</td>
-          <td>${r.elapsed}</td>
+          <td>${timeHtml}</td>
           <td class="start-time-col">${r.start_time}</td>
         `;
         if (r.color) {

@@ -50,7 +50,7 @@ app.use('/api/events', eventsRouter);
 app.use('/api/unassigned', unassignedRouter);
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', '..', 'html', 'timing.html'));
+  res.redirect('/live');
 });
 
 app.get('/live', (req, res) => {
@@ -59,6 +59,10 @@ app.get('/live', (req, res) => {
 
 app.get('/admin', auth, (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'html', 'admin.html'));
+});
+
+app.get('/allenamento/:code/manage', auth, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'html', 'training-manage.html'));
 });
 
 app.get('/allenamento/:code', auth, (req, res) => {

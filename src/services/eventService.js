@@ -81,12 +81,32 @@ async function nextSequence(type) {
   return row?.seq || 1;
 }
 
+async function completeOtherEvents(exceptId = null) {
+  const now = new Date().toISOString();
+  const params = [now, now];
+  let where = 'WHERE (status = \"active\" OR is_active = 1)';
+  if (exceptId != null) {
+    where += ' AND id != ?';
+    params.push(exceptId);
+  }
+  await run(
+    timingDb,
+    `UPDATE events
+     SET is_active = 0,
+         status = 'completed',
+         ended_at = COALESCE(ended_at, ?),
+         updated_at = ?
+     ${where}`,
+    params
+  );
+}
+
 async function createEvent({ type, name }) {
   const sequence = await nextSequence(type);
   const code = buildCode(type, sequence);
   const now = new Date().toISOString();
 
-  await run(timingDb, `UPDATE events SET is_active = 0 WHERE is_active = 1`);
+  await completeOtherEvents();
 
   const result = await run(
     timingDb,
@@ -161,7 +181,7 @@ async function getActiveEvent() {
 
 async function setActiveEvent(id) {
   const now = new Date().toISOString();
-  await run(timingDb, `UPDATE events SET is_active = 0 WHERE is_active = 1`);
+  await completeOtherEvents(id);
   await run(
     timingDb,
     `UPDATE events SET is_active = 1, status = 'active', updated_at = ?, started_at = COALESCE(started_at, ?) WHERE id = ?`,
@@ -209,6 +229,33 @@ async function updateEventConfig(id, config) {
     params
   );
   return getEventById(id);
+}
+
+async function updateEventName(id, name) {
+  const now = new Date().toISOString();
+  await run(
+    timingDb,
+    `UPDATE events SET name = ?, updated_at = ? WHERE id = ?`,
+    [name || null, now, id]
+  );
+  return getEventById(id);
+}
+
+async function renameHeat(eventId, heatId, name) {
+  if (!heatId) return null;
+  await run(
+    timingDb,
+    `UPDATE heats SET name = ? WHERE id = ? AND event_id = ?`,
+    [name || null, heatId, eventId]
+  );
+  return get(timingDb, `SELECT * FROM heats WHERE id = ?`, [heatId]);
+}
+
+async function deleteEvent(id) {
+  await run(timingDb, `DELETE FROM timings WHERE event_id = ?`, [id]);
+  await run(timingDb, `DELETE FROM participants WHERE event_id = ?`, [id]);
+  await run(timingDb, `DELETE FROM heats WHERE event_id = ?`, [id]);
+  await run(timingDb, `DELETE FROM events WHERE id = ?`, [id]);
 }
 
 async function getHeatById(id) {
@@ -327,15 +374,18 @@ module.exports = {
   setActiveEvent,
   closeEvent,
   updateEventConfig,
+  updateEventName,
   listHeats,
   getHeatById,
   addHeat,
+  renameHeat,
   listParticipants,
   getParticipantByTag,
   getParticipantByBib,
   upsertParticipant,
   removeParticipant,
   resetParticipants,
+  deleteEvent,
   buildSlug,
   getEventBySlug,
   getEventByCode,

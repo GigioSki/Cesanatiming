@@ -16,7 +16,10 @@ const {
   upsertParticipant,
   removeParticipant,
   resetParticipants,
-  setNextPointer
+  setNextPointer,
+  updateEventName,
+  renameHeat,
+  deleteEvent
 } = require('../../services/eventService');
 const { setOverrideBib } = require('../../services/raceLogic');
 const { listRawTimings, recordTiming, formatMs } = require('../../services/timingService');
@@ -81,6 +84,16 @@ router.post('/', async (req, res) => {
     }
     const event = await createEvent({ type, name });
     res.status(201).json(event);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const { name } = req.body;
+    const event = await updateEventName(Number(req.params.id), name);
+    res.json(event);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -152,6 +165,15 @@ router.post('/:id/heats', async (req, res) => {
   }
 });
 
+router.patch('/:id/heats/:heatId', async (req, res) => {
+  try {
+    const heat = await renameHeat(Number(req.params.id), Number(req.params.heatId), req.body.name);
+    res.json(heat);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/:id/export/participants', async (req, res) => {
   try {
     const participants = await listParticipants(Number(req.params.id));
@@ -173,13 +195,14 @@ router.get('/:id/export/timings', async (req, res) => {
       listParticipants(eventId)
     ]);
     const participantById = new Map(participants.map(p => [p.id, p]));
-    const header = toCsvRow(['bib_number', 'name', 'tag_id', 'elapsed_ms', 'elapsed_text', 'start_time']);
+    const header = toCsvRow(['bib_number', 'name', 'tag_id', 'elapsed_ms', 'elapsed_text', 'status', 'start_time']);
     const rows = timings.map(t => {
       const participant = t.participant_id ? participantById.get(t.participant_id) : null;
       const bib = participant?.bib_number ?? t.bib_number ?? '';
       const name = participant?.name || '';
       const tag = participant?.tag_uuid || t.tag_id || '';
-      return toCsvRow([bib, name, tag, t.elapsed_ms, formatMs(t.elapsed_ms), t.start_time]);
+      const elapsedText = t.status === 'dnf' ? 'DNF' : formatMs(t.elapsed_ms);
+      return toCsvRow([bib, name, tag, t.elapsed_ms, elapsedText, t.status, t.start_time]);
     });
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="timings.csv"');
@@ -294,6 +317,15 @@ router.post('/:id/override', async (req, res) => {
     const bib = raw === undefined || raw === null || raw === '' ? null : Number(raw);
     const metadata = await setOverrideBib(Number(req.params.id), bib);
     res.json(metadata);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await deleteEvent(Number(req.params.id));
+    res.sendStatus(204);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
