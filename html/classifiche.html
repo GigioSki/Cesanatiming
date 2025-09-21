@@ -3,29 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tempi - Cesana Timing</title>
+  <title>Classifiche - Cesana Timing</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header class="navbar">
+  <header class="navbar">
     <div class="navbar-left">Cesana Timing</div>
     <div class="navbar-right">
-      <a href="/live" class="nav-link active">Tempi</a>
-      <a href="/classifiche" class="nav-link">Classifiche</a>
+      <a href="/live" class="nav-link">Tempi</a>
+      <a href="/classifiche" class="nav-link active">Classifiche</a>
       <a href="/admin" class="nav-link">Admin</a>
       <button id="theme-toggle" class="theme-toggle">🌙</button>
     </div>
   </header>
 
   <main class="container">
-    <h1>Tempi Live</h1>
+    <h1>Classifiche</h1>
     <p id="event-info" class="event-info">Caricamento evento…</p>
     <table>
       <thead>
         <tr>
           <th>Nome/Tag</th>
           <th>Tempo</th>
-          <th class="start-time-col">Ora partenza</th>
+          <th>Distacco</th>
         </tr>
       </thead>
       <tbody id="tbody">
@@ -35,15 +35,14 @@
   </main>
 
   <script>
-    // Theme toggle
     const toggle = document.getElementById('theme-toggle');
     const currentTheme = localStorage.getItem('theme') || 'light';
-    document.body.classList.toggle('dark-mode', currentTheme==='dark');
-    toggle.textContent = currentTheme==='dark'?'☀️':'🌙';
+    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+    toggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
     toggle.addEventListener('click', () => {
       const isDark = document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', isDark?'dark':'light');
-      toggle.textContent = isDark?'☀️':'🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      toggle.textContent = isDark ? '☀️' : '🌙';
     });
 
     const tbody = document.getElementById('tbody');
@@ -57,6 +56,18 @@
       return `${typeLabel} ${code}${namePart}`;
     }
 
+    function formatDelta(ms) {
+      const abs = Math.max(ms, 0);
+      const minutes = Math.floor(abs / 60000);
+      const seconds = Math.floor((abs % 60000) / 1000);
+      const centiseconds = Math.floor((abs % 1000) / 10);
+      const pad = (value) => String(value).padStart(2, '0');
+      if (minutes > 0) {
+        return `+${minutes}:${pad(seconds)}.${pad(centiseconds)}`;
+      }
+      return `+${seconds}.${pad(centiseconds)}`;
+    }
+
     function renderNoEvent() {
       eventInfo.textContent = 'Nessun evento attivo.';
       tbody.innerHTML = '<tr><td colspan="3">Nessun tempo disponibile.</td></tr>';
@@ -68,13 +79,24 @@
         tbody.innerHTML = '<tr><td colspan="3">Nessun tempo registrato.</td></tr>';
         return;
       }
-      rows.forEach(row => {
+
+      const completed = rows.filter(row => row.status !== 'dnf').sort((a, b) => a.elapsed_ms - b.elapsed_ms);
+      const dnfs = rows.filter(row => row.status === 'dnf');
+      const bestTime = completed.length ? completed[0].elapsed_ms : null;
+      const ordered = [...completed, ...dnfs];
+
+      ordered.forEach(row => {
         const tr = document.createElement('tr');
         const timeHtml = row.status === 'dnf' ? '<span class="dnf">DNF</span>' : row.elapsed;
+        let gapHtml = '—';
+        if (row.status !== 'dnf' && bestTime != null) {
+          const delta = row.elapsed_ms - bestTime;
+          gapHtml = formatDelta(delta);
+        }
         tr.innerHTML = `
-          <td>${row.best ? '☆ ' : ''}${row.name}</td>
+          <td>${row.name}</td>
           <td>${timeHtml}</td>
-          <td class="start-time-col">${row.start_time}</td>
+          <td>${gapHtml}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -93,21 +115,21 @@
         const event = await eventRes.json();
         eventInfo.textContent = `${describeEvent(event)} · Stato ${event.status}`;
 
-        const res = await fetch(`/api/timings?eventId=${event.id}&limit=200`);
+        const res = await fetch(`/api/timings?eventId=${event.id}&limit=500`);
         if (!res.ok) {
           throw new Error('timing-load');
         }
         const data = await res.json();
         renderTimings(data);
       } catch (err) {
-        console.error('Errore caricamento live', err);
+        console.error('Errore caricamento classifiche', err);
         eventInfo.textContent = 'Errore durante il caricamento.';
         tbody.innerHTML = '<tr><td colspan="3">—</td></tr>';
       }
     }
 
     loadData();
-    setInterval(loadData, 1000);
+    setInterval(loadData, 2000);
   </script>
 </body>
 </html>

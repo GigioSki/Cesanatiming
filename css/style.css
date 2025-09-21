@@ -348,12 +348,24 @@ button:hover { background: var(--nav-hover); }
 
 .race-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
 }
 
-.race-options h3 {
-  margin-top: 0;
+.option-card {
+  border: 1px solid var(--table-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--table-body-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.option-card h3 {
+  margin: 0;
 }
 
 .toggle-control {
@@ -412,6 +424,12 @@ button:hover { background: var(--nav-hover); }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: 100%;
+}
+
+.override-box input {
+  width: 100%;
+  margin: 0;
 }
 
 .override-actions {
@@ -454,10 +472,15 @@ body.dark-mode .help-text {
 .import-button {
   position: relative;
   overflow: hidden;
-  border: 1px dashed var(--table-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--button-bg);
+  color: var(--button-text);
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .import-button input {
@@ -473,10 +496,17 @@ body.dark-mode .help-text {
 .participants-table input {
   width: 100%;
   padding: 0.4rem;
+  margin: 0;
   border-radius: 0.4rem;
   border: 1px solid var(--table-border);
   background: var(--bg-color);
   color: var(--text-color);
+  max-width: 100%;
+}
+
+.participants-actions input {
+  margin: 0;
+  max-width: 100px;
 }
 
 .heats-header {
@@ -544,7 +574,18 @@ body.dark-mode .help-text {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+@media (min-width: 720px) {
   .race-options {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .participants-actions {
+    flex-wrap: nowrap;
+  }
+}
+
+.event-info {
+  margin: 0.25rem 0 0.75rem;
+  font-style: italic;
 }

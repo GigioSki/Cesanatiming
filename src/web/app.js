@@ -21,8 +21,12 @@ const auth = basicAuth({
 });
 
 const protectedPrefixes = ['/setup.html', '/admin', '/api/tags', '/api/db', '/api/events'];
+const publicPaths = ['/api/events/active'];
 
 app.use((req, res, next) => {
+  if (publicPaths.includes(req.path)) {
+    return next();
+  }
   if (
     protectedPrefixes.some(p => req.path === p || req.path.startsWith(p + '/'))
   ) {
@@ -55,6 +59,10 @@ app.get('/', (req, res) => {
 
 app.get('/live', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'html', 'timing.html'));
+});
+
+app.get('/classifiche', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'html', 'classifiche.html'));
 });
 
 app.get('/admin', auth, (req, res) => {
